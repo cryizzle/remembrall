@@ -63,16 +63,26 @@ The repo ships with two compose files: `docker-compose.yml` (prod-shaped, uses t
    docker compose -f docker-compose.yml up -d --build
    ```
 
-   Prisma migrations apply automatically at container start. The API binds to `127.0.0.1:8989` — put a reverse proxy or tunnel (Caddy, Cloudflare Tunnel, …) in front to terminate TLS and expose it publicly.
+   Prisma migrations apply automatically at container start. The API binds to `127.0.0.1:8989`.
+
+   The stack includes a `cloudflared` service that opens an outbound tunnel to Cloudflare — no router port forwarding, no inbound exposure of your home IP. Set up the tunnel once in the Cloudflare dashboard:
+
+   - Go to **Zero Trust → Networks → Tunnels → Create a tunnel**, choose **Cloudflared** as the connector.
+   - Copy the connector token Cloudflare gives you into `.env` as `CLOUDFLARE_TUNNEL_TOKEN`.
+   - Add a **Public Hostname** to the tunnel:
+     - Subdomain: `remembrall` (or whatever)
+     - Domain: your Cloudflare-managed domain
+     - Service: `HTTP` and `api:8989` (the docker service name, **not** localhost)
+   - Cloudflare auto-creates the CNAME + TLS cert.
 
 3. Register the Telegram webhook against your public URL with a production `TELEGRAM_WEBHOOK_SECRET`:
 
    ```bash
-   curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
+   source .env && curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
      -H "Content-Type: application/json" \
-     -d '{
-       "url": "https://your-domain.example/telegram/webhook",
-       "secret_token": "your-webhook-secret"
-     }'
+     -d "{
+       \"url\": \"https://remembrall.your-domain.com/telegram/webhook\",
+       \"secret_token\": \"$TELEGRAM_WEBHOOK_SECRET\"
+     }"
    ```
 

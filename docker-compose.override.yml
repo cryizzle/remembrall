@@ -11,3 +11,8 @@ services:
       - /app/node_modules
     healthcheck: !reset null
     deploy: !reset null
+
+  # Tunnel is prod-only. Putting it in a non-default profile here means
+  # `docker compose up` (dev) skips it without needing CLOUDFLARE_TUNNEL_TOKEN.
+  tunnel:
+    profiles: ["donotstart"]
