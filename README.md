@@ -1,5 +1,9 @@
 # remembrall
 
+<p align="center">
+  <img src="assets/remembrall_welcome.png" alt="Remembrall welcome screen" width="480">
+</p>
+
 A Telegram-first reminder bot. Send it a message in plain English ("remind me to bring my charger tomorrow at 8am") and it turns that into a structured reminder you can manage from the chat.
 
 ## Stack
