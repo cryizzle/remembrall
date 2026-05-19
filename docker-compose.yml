@@ -1,0 +1,40 @@
+services:
+  api:
+    image: node:22-bookworm-slim
+    working_dir: /app
+    command: sh -c "apt-get update && apt-get install -y openssl && npm install && npx prisma generate && npx prisma db push && npm run dev"
+    env_file:
+      - .env
+    ports:
+      - "8989:8989"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/remembrall?schema=public}
+      PORT: ${PORT:-8989}
+      HOST: ${HOST:-0.0.0.0}
+      POOLSIDE_API_KEY: ${POOLSIDE_API_KEY:-}
+      POOLSIDE_BASE_URL: ${POOLSIDE_BASE_URL:-}
+      POOLSIDE_MODEL: ${POOLSIDE_MODEL:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_WEBHOOK_SECRET: ${TELEGRAM_WEBHOOK_SECRET:-}
+    volumes:
+      - ./:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: remembrall
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d remembrall"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
