@@ -46,3 +46,33 @@ A Telegram-first reminder bot. Send it a message in plain English ("remind me to
    The `secret_token` must match `TELEGRAM_WEBHOOK_SECRET` so the app can verify incoming updates.
 
 That's it — message your bot to start creating reminders.
+
+## Production (home server)
+
+The repo ships with two compose files: `docker-compose.yml` (prod-shaped, uses the bundled `Dockerfile`) and `docker-compose.override.yml` (dev-only, restores the bind-mount + `tsx watch` workflow). `docker compose up` merges both automatically, so local dev keeps working as above. On the server, pass `-f docker-compose.yml` to skip the override.
+
+1. Generate a strong `POSTGRES_PASSWORD` and add it (plus all the other secrets) to `.env` on the server. Don't forget to update `DATABASE_URL` to use the same password.
+
+   ```bash
+   openssl rand -base64 48 | tr -d '/+=\n' | head -c 32
+   ```
+
+2. Build and run the prod stack:
+
+   ```bash
+   docker compose -f docker-compose.yml up -d --build
+   ```
+
+   Prisma migrations apply automatically at container start. The API binds to `127.0.0.1:8989` — put a reverse proxy or tunnel (Caddy, Cloudflare Tunnel, …) in front to terminate TLS and expose it publicly.
+
+3. Register the Telegram webhook against your public URL with a production `TELEGRAM_WEBHOOK_SECRET`:
+
+   ```bash
+   curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "url": "https://your-domain.example/telegram/webhook",
+       "secret_token": "your-webhook-secret"
+     }'
+   ```
+

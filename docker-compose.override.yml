@@ -1,0 +1,13 @@
+services:
+  api:
+    build: !reset null
+    image: node:22-bookworm-slim
+    working_dir: /app
+    command: sh -c "apt-get update && apt-get install -y openssl && npm install && npx prisma generate && npx prisma migrate deploy && npm run dev"
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    healthcheck: !reset null
+    deploy: !reset null
