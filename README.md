@@ -57,13 +57,18 @@ The repo ships with two compose files: `docker-compose.yml` (prod-shaped, uses t
    openssl rand -base64 48 | tr -d '/+=\n' | head -c 32
    ```
 
-2. Build and run the prod stack:
+2. Pull and run the prod stack:
 
    ```bash
-   docker compose -f docker-compose.yml up -d --build
+   docker compose -f docker-compose.yml up -d
    ```
 
-   Prisma migrations apply automatically at container start. The API binds to `127.0.0.1:8989`.
+   The `api` service pulls from `ghcr.io/cryizzle/remembrall:latest` (or use `IMAGE_TAG` in `.env` to pin a specific version). Prisma migrations apply automatically at container start.
+
+   To build a new image, trigger the manual workflow in GitHub Actions:
+
+   - Go to the **Actions** tab → **Build & Push Docker Image** → **Run workflow**
+   - Enter a tag (e.g. `v0.1.1` or `latest`) and click **Run workflow**
 
    The stack includes a `cloudflared` service that opens an outbound tunnel to Cloudflare — no router port forwarding, no inbound exposure of your home IP. Set up the tunnel once in the Cloudflare dashboard:
 

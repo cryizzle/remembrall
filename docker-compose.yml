@@ -1,7 +1,6 @@
 services:
   api:
-    build: .
-    image: remembrall:local
+    image: ghcr.io/cryizzle/remembrall:${IMAGE_TAG:-latest}
     restart: unless-stopped
     env_file:
       - .env
